@@ -1,0 +1,20 @@
+{
+  "name": "number-clash-api",
+  "version": "1.0.0",
+  "description": "An API to manage game play for Number Clash. A two player numbers game where the lowest selected number wins... most of the time.",
+  "homepage": "https://github.com/borisBoris17/number-clash-api#readme",
+  "bugs": {
+    "url": "https://github.com/borisBoris17/number-clash-api/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/borisBoris17/number-clash-api.git"
+  },
+  "license": "ISC",
+  "author": "Tucker Bichsel",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
