@@ -1,8 +1,9 @@
 import supabase from '../lib/supabase.js';
 
 export default async function handler(req, res) {
-  console.log(process.env.HOST_URL)
-  console.log(`${process.env.HOST_URL}/api/matchmaker`)
+
+  const HOST_URL = process.env.HOST_URL || 'http://localhost:3000';
+  
   if (req.method === 'POST') {
     const { playerId } = req.body;
 
@@ -33,10 +34,7 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: error.message });
       }
 
-      console.log(process.env.HOST_URL)
-      console.log(`${process.env.HOST_URL}/api/matchmaker`)
-
-      const response = await fetch(`${process.env.HOST_URL}/api/matchmaker`, {
+      const response = await fetch(`${HOST_URL}/api/matchmaker`, {
         method: 'POST',
       });
 

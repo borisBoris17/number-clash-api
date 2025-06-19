@@ -3,7 +3,14 @@ import supabase from '../lib/supabase.js';
 export default async function handler(req, res) {
 
   if (req.method === 'POST') {
-    const { player1Id, player2Id } = req.body;
+    console.log("in games")
+    const { player1Id, player2Id } = JSON.parse(req.body);
+
+      console.log(player1Id)
+      console.log(player2Id)
+      console.log(req.body)
+      console.log(req.body.player1Id)
+      console.log(req.body.player2Id)
 
     const { data, error } = await supabase
       .from('games')
@@ -15,11 +22,14 @@ export default async function handler(req, res) {
       .select()
       .single();
 
+      console.log(data)
+      console.log(error)
+
     if (error) {
       return res.status(500).json({ error: error.message });
     }
+    console.log("before round")
 
-    // Optionally create first round
     const { error: roundError } = await supabase.from('rounds').insert({
       game_id: data.id,
       round_number: 1,
@@ -30,7 +40,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: roundError.message });
     }
 
-    res.status(200).json(data);
+    return res.status(200).json(data);
   } else if (req.method === 'GET') {
     const { playerId } = req.query;
     if (playerId) {
