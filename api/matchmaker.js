@@ -23,7 +23,7 @@ export default async function handler(req, res) {
         .single();
 
       // 4. Update both queue rows
-      const { queueData, error } = await supabase
+      const { data: queueData, error } = await supabase
         .from('match_queue')
         .update({ status: 'matched', game_id: game.id })
         .or(`player_id.eq.${p1.player_id},player_id.eq.${p2.player_id}`)

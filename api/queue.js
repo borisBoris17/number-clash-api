@@ -4,29 +4,44 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     const { playerId } = req.body;
 
-    const { data, error } = await supabase
+    const { data: existingQueue, error: selectError } = await supabase
       .from('match_queue')
-      .insert({
-        player_id: playerId,
-      })
-      .select()
-      .single();
+      .select('*')
+      .eq('player_id', playerId)
+      .eq('status', 'waiting')
+      .maybeSingle();
 
-    if (error) {
-      return res.status(500).json({ error: error.message });
+    if (selectError) {
+      return res.status(500).json({ error: selectError.message });
     }
 
-    const response = await fetch('http://localhost:3000/api/matchmaker', {
-      method: 'POST',
-    });
-
-    if (response.status !== 200 ) {
-      return res.status(500).json({ error: 'Error while attempting matchmaking.' });
+    if (existingQueue) {
+      return res.status(200).json(existingQueue);
     }
 
-    const result = await response.json();
+    const { data, error } = await supabase
+        .from('match_queue')
+        .insert({
+          player_id: playerId,
+        })
+        .select()
+        .single();
 
-    return res.status(200).json(data, result);
+      if (error) {
+        return res.status(500).json({ error: error.message });
+      }
+
+      const response = await fetch('http://localhost:3000/api/matchmaker', {
+        method: 'POST',
+      });
+
+      if (response.status !== 200) {
+        return res.status(500).json({ error: 'Error while attempting matchmaking.' });
+      }
+
+      const result = await response.json();
+
+      return res.status(200).json(data, result);
   }
 
   if (req.method === 'GET') {
