@@ -13,7 +13,7 @@ export default async function handler(req, res) {
         round_number,
         player1_input,
         player2_input,
-        winner_id,
+        winner,
         status,
         created_at
       )
@@ -25,7 +25,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: error.message });
     }
 
-    res.status(200).json(data);
+    return res.status(200).json(data);
   }
 
   return res.status(405).json({ message: 'Method Not Allowed' });

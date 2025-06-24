@@ -3,14 +3,7 @@ import supabase from '../lib/supabase.js';
 export default async function handler(req, res) {
 
   if (req.method === 'POST') {
-    console.log("in games")
     const { player1Id, player2Id } = JSON.parse(req.body);
-
-      console.log(player1Id)
-      console.log(player2Id)
-      console.log(req.body)
-      console.log(req.body.player1Id)
-      console.log(req.body.player2Id)
 
     const { data, error } = await supabase
       .from('games')
@@ -22,19 +15,18 @@ export default async function handler(req, res) {
       .select()
       .single();
 
-      console.log(data)
-      console.log(error)
 
     if (error) {
       return res.status(500).json({ error: error.message });
     }
-    console.log("before round")
 
-    const { error: roundError } = await supabase.from('rounds').insert({
-      game_id: data.id,
-      round_number: 1,
-      status: 'waiting',
-    });
+    const { error: roundError } = await supabase
+      .from('rounds')
+      .insert({
+        game_id: data.id,
+        round_number: 1,
+        status: 'waiting',
+      });
 
     if (roundError) {
       return res.status(500).json({ error: roundError.message });
@@ -49,7 +41,7 @@ export default async function handler(req, res) {
         .from('games')
         .select('*')
         .or(`player1_id.eq.${playerId},player2_id.eq.${playerId}`) // "or" condition
-     
+
       if (error) {
         return res.status(500).json({ error: error.message });
       }

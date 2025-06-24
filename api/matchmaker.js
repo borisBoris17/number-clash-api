@@ -15,9 +15,6 @@ export default async function handler(req, res) {
     if (waitingPlayers.length >= 2) {
       const [p1, p2] = waitingPlayers;
 
-      console.log(p1.player_id)
-      console.log(p2.player_id)
-
       const response = await fetch(`${HOST_URL}/api/games`, {
         method: 'POST',
         body: JSON.stringify({
@@ -31,8 +28,6 @@ export default async function handler(req, res) {
       }
 
       const result = await response.json();
-
-      console.log(result)
 
       // 4. Update both queue rows
       const { data: queueData, error } = await supabase
