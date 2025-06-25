@@ -7,6 +7,15 @@ export default async function handler(req, res) {
     const { roundId } = req.query;
     const { gameId, playerId, selectedNum } = req.body;
 
+    const { data: existingRoundData, error } = await supabase
+      .from('rounds')
+      .select('*')
+      .eq('id', roundId)
+      .single()
+
+    if (error) {
+      return res.status(500).json({ error: error.message });
+    }
 
     const parsedNum = parseInt(selectedNum);
 
@@ -31,6 +40,10 @@ export default async function handler(req, res) {
     let roundToReturn;
 
     if (isFirstPlayer) {
+      if (existingRoundData.player1_input) {
+        return res.status(500).json({ error: `Player 1 already submitted ${existingRoundData.player1_input} For this Round.` });
+      }
+
       const { data: updateRoundData, error: updateRoundError } = await supabase
         .from('rounds')
         .update({ player1_input: parsedNum, status: 'playing' })
@@ -38,6 +51,9 @@ export default async function handler(req, res) {
         .select();
 
       var firstPlayerSelections = gameJson.player1_nums
+      if (firstPlayerSelections.includes(parsedNum)) {
+        return res.status(500).json({ error: `${parsedNum} already selected by player 1.` });
+      }
       firstPlayerSelections.push(parsedNum)
 
       await supabase
@@ -49,6 +65,10 @@ export default async function handler(req, res) {
       // return res.status(200).json({updateRoundData})
 
     } else {
+      if (existingRoundData.player2_input) {
+        return res.status(500).json({ error: `Player 2 already submitted ${existingRoundData.player2_input} For this Round.` });
+      }
+
       const { data: updateRoundData, error: updateRoundError } = await supabase
         .from('rounds')
         .update({ player2_input: selectedNum, status: 'playing' })
@@ -56,6 +76,9 @@ export default async function handler(req, res) {
         .select();
 
       var secondPlayerSelections = gameJson.player2_nums
+      if (secondPlayerSelections.includes(parsedNum)) {
+        return res.status(500).json({ error: `${parsedNum} already selected by player 2.` });
+      }
       secondPlayerSelections.push(parsedNum)
 
       await supabase
@@ -65,7 +88,6 @@ export default async function handler(req, res) {
         .select();
 
       roundToReturn = updateRoundData
-      // return res.status(200).json({updateRoundData})
     }
 
     const { data: roundData, error: roundError } = await supabase
@@ -130,11 +152,48 @@ export default async function handler(req, res) {
         if (addRoundError) {
           return res.status(500).json({ error: addRoundError.message });
         }
+
+        const { error: updateCurrentRoundError } = await supabase
+          .from('games')
+          .update({ current_round: updateGameWinnerData.round_number + 1 })
+          .eq('id', gameId)
+
+        if (updateCurrentRoundError) {
+          return res.status(500).json({ error: updateCurrentRoundError.message });
+        }
+
+      } else {
+        const { error: updateStatusError } = await supabase
+          .from('games')
+          .update({ status: 'complete' })
+          .eq('id', gameId)
+
+        if (updateStatusError) {
+          return res.status(500).json({ error: updateStatusError.message });
+        }
       }
 
       roundToReturn = updateGameWinnerData
     }
     return res.status(200).json({ roundToReturn })
+  } else if (req.method === 'GET') {
+    const { roundId } = req.query;
+
+
+    const { data, error } = await supabase
+      .from('rounds')
+      .select(`*,
+    game:games (
+      *
+    )`)
+      .eq('id', roundId)
+      .single()
+
+    if (error) {
+      return res.status(500).json({ error: error.message });
+    }
+
+    return res.status(200).json({ data })
   }
 
   return res.status(405).json({ message: 'Method Not Allowed' });
